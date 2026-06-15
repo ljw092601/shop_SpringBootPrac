@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="/main.css" rel="stylesheet">
+    <style>
+        .pagination {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        .pagination li {
+            margin: 0 5px;
+        }
+        .pagination a {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #337ab7;
+        }
+        .pagination li.active a {
+            background-color: #337ab7;
+            color: white;
+            border-color: #337ab7;
+        }
+        .pagination li.disabled a {
+            color: #777;
+            pointer-events: none;
+            cursor: default;
+            background-color: #fff;
+            border-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+<div class="nav">
+    <a class="logo">SpringMall</a>
+    <a href="/list/page/1">List</a>
+    <a href="/register">Write</a>
+</div>
+
+<form action="/search" method="POST">
+    <input name="searchText" style="display : inline">
+    <button> 검색 </button>
+</form>
+
+<div class="card" th:each="i : ${items.content}">
+    <img th:src="${#strings.isEmpty(i.image) ? 'https://placehold.co/300' : i.image}">
+    <div>
+        <a th:href="@{/detail/{id}(id=${i.id})}">
+            <h4 th:text="${i.name}"></h4>
+        </a>
+        <p th:text="${i.price}"></p>
+        <p th:text="${i.category}"></p>
+        <a th:href="@{/edit/{id}(id=${i.id})}">Edit</a>
+        <button th:onclick="'deleteItem(\'' + ${i.id} + '\')'">삭제</button>
+    </div>
+</div>
+<div th:if="${items.empty}" style="text-align: center; padding: 20px;">
+    <p>표시할 아이템이 없습니다.</p>
+</div>
+
+<nav th:if="${!items.isEmpty()}">
+    <ul class="pagination">
+        <li th:classappend="${items.first} ? 'disabled'">
+            <a th:href="@{/list/page/1}">&laquo;&laquo;</a>
+        </li>
+        <li th:classappend="${!items.hasPrevious()} ? 'disabled'">
+            <a th:href="${items.first} ? '#' : @{/list/page/{num}(num=${items.number})}">&laquo;</a>
+        </li>
+
+        <th:block th:with="start=${T(java.lang.Math).floor(items.number/5) * 5 + 1}, end=(${start + 4 < items.totalPages ? start + 4 : items.totalPages})">
+            <li th:each="page: ${#numbers.sequence(start, end)}" th:classappend="${page == items.number + 1} ? 'active'">
+                <a th:href="@{/list/page/{num}(num=${page})}" th:text="${page}"></a>
+            </li>
+        </th:block>
+
+        <li th:classappend="${!items.hasNext()} ? 'disabled'">
+            <a th:href="${items.last} ? '#' : @{/list/page/{num}(num=${items.number + 2})}">&raquo;</a>
+        </li>
+        <li th:classappend="${items.last} ? 'disabled'">
+            <a th:href="@{/list/page/{num}(num=${items.totalPages})}">&raquo;&raquo;</a>
+        </li>
+    </ul>
+</nav>
+
+<script>
+    function deleteItem(id) {
+        fetch('/del', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: id.toString() })
+        })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('삭제에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('삭제 중 오류가 발생했습니다.');
+            });
+    }
+</script>
+
+</body>
+</html>

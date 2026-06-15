@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>상품 등록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap');
+        :root { --bg:#f7f7fb; --card:#fff; --text:#222; --muted:#666; --accent:#4f46e5; --border:#e5e7eb; }
+        * { box-sizing: border-box; }
+        body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple Color Emoji,Noto Color Emoji,Arial,sans-serif; background:var(--bg); color:var(--text); }
+        .container { max-width:520px; margin:48px auto; padding:0 16px; }
+        .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; box-shadow:0 6px 20px rgba(0,0,0,.06); }
+        h1 { margin:0 0 16px; font-size:22px; }
+        p.desc { margin:0 0 20px; color:var(--muted); font-size:14px; }
+        .field { margin-bottom:16px; }
+        label { display:block; margin-bottom:8px; font-weight:600; }
+        input, select, button {
+            width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px; font-size:15px; background:#fff;
+        }
+        input:focus, select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,70,229,.15); }
+        .row { display:flex; gap:12px; }
+        .row .field { flex:1; margin:0; }
+        button { background:var(--accent); color:#fff; font-weight:600; cursor:pointer; border:none; transition:.15s transform ease; }
+        button:hover { transform:translateY(-1px); }
+        small.hint { color:var(--muted); display:block; margin-top:6px; }
+        .nav {
+            display: flex;
+            padding: 10px;
+            align-items: center;
+            font-family: 'Montserrat', serif;
+        }
+        .nav a {
+            margin-right: 10px;
+            text-decoration : none;
+            font-weight : 400;
+            letter-spacing : -0.5px;
+        }
+        .nav .logo {
+            font-weight : 800;
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <a class="logo">SpringMall</a>
+    <a href="/list/page/1">List</a>
+    <a href="/register">Write</a>
+</div>
+
+<div class="container">
+    <form class="card" action="/add" method="post">
+        <h1>상품 등록</h1>
+        <p class="desc">이름과 가격을 입력하고, 카테고리를 선택하세요.</p>
+
+        <div class="field">
+            <label for="name">이름</label>
+            <input id="name" name="name" type="text" placeholder="예) 사과" required maxlength="100" />
+        </div>
+
+        <div class="row">
+            <div class="field">
+                <label for="price">가격</label>
+                <input id="price" name="price" type="number" inputmode="numeric" placeholder="예) 1000" required min="0" step="1" />
+                <small class="hint">숫자만 입력 (원)</small>
+            </div>
+
+            <div class="field">
+                <label for="category">카테고리</label>
+                <select id="category" name="category" required>
+                    <option value="" disabled selected>카테고리 선택</option>
+                    <option value="FRUIT">과일</option>
+                    <option value="VEGETABLE">채소</option>
+                    <option value="BEVERAGE">음료</option>
+                    <option value="PROCESSED">가공식품</option>
+                    <option value="DAILY">생활용품</option>
+                </select>
+            </div>
+        </div>
+
+        <input type="file" onchange="getURL(this)"/>
+        <input type="hidden" name="image" id="img_url">
+
+        <script>
+            async function getURL(e) {
+                let name = encodeURIComponent(e.files[0].name)
+                let result = await fetch('presigned-url?filename=' + e.files[0].name)
+                result = await result.text()
+
+                let img_url = await fetch(result, {
+                    method : 'PUT',
+                    body  : e.files[0]
+                })
+
+                document.getElementById("img_url").value = img_url.url.split("?")[0]
+
+                if (img_url.ok) {
+                    console.log(img_url.url.split("?")[0]);
+                }
+
+            }
+        </script>
+
+        <button type="submit">전송</button>
+    </form>
+</div>
+</body>
+</html>

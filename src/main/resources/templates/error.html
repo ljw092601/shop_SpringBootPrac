@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>에러 발생</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; }
+        h1 { font-size: 2rem; color: #c00; }
+        p { color: #666; }
+        a { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+<h1>문제가 발생했습니다</h1>
+<p th:text="${status}"></p>
+<p th:text="${error}"></p>
+<p th:text="${message}">요청을 처리하는 중 오류가 발생했습니다.</p>
+<p><a th:href="@{/list}">홈으로 돌아가기</a></p>
+</body>
+</html>

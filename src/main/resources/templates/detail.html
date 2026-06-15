@@ -1,0 +1,64 @@
+<div class="nav">
+    <a class="logo">SpringMall</a>
+    <a href="/list/page/1">List</a>
+    <a href="/register">Write</a>
+</div>
+
+<hr/>
+
+<div class="detail">
+    <h4>상세페이지</h4>
+    <img th:src="${#strings.isEmpty(item.image) ? 'https://placehold.co/300' : item.image}">
+    <h4 th:text="${item.name}"></h4>
+    <p th:text="${item.price}"></p>
+    <p th:text="${item.category}"></p>
+</div>
+
+<hr/>
+
+<div class="comments">
+    <h4>댓글</h4>
+
+    <div th:if="${comments.totalElements == 0}">
+        아직 댓글이 없습니다.
+    </div>
+
+    <ul th:if="${comments.totalElements > 0}">
+        <li th:each="c : ${comments.content}">
+            <strong th:text="${c.username}">작성자</strong>
+            <p th:text="${c.content}">내용</p>
+        </li>
+    </ul>
+
+    <!-- Pagination -->
+    <div class="pagination" th:if="${comments.totalPages > 1}">
+        <!-- 이전 -->
+        <a th:if="${comments.hasPrevious()}"
+           th:href="@{|/detail/${item.id}?page=${comments.number - 1}|}">이전</a>
+
+        <!-- 페이지 번호 -->
+        <span th:each="i : ${#numbers.sequence(0, comments.totalPages - 1)}">
+            <a th:if="${i != comments.number}"
+               th:href="@{|/detail/${item.id}?page=${i}|}"
+               th:text="${i + 1}">1</a>
+            <strong th:if="${i == comments.number}" th:text="${i + 1}">1</strong>
+            <span th:if="${i < comments.totalPages - 1}"> </span>
+        </span>
+
+        <!-- 다음 -->
+        <a th:if="${comments.hasNext()}"
+           th:href="@{|/detail/${item.id}?page=${comments.number + 1}|}">다음</a>
+    </div>
+    <form action="/comment" method="post">
+        <!-- 어떤 아이템에 달린 댓글인지 구분하기 위해 hidden으로 parentId 전달 -->
+        <input type="hidden" name="parentId" th:value="${item.id}"/>
+
+        <label for="username">작성자</label>
+        <input type="text" id="username" name="username" required/><br/>
+
+        <label for="content">내용</label><br/>
+        <textarea id="content" name="content" rows="4" cols="40" required></textarea><br/>
+
+        <button type="submit">댓글 등록</button>
+    </form>
+</div>

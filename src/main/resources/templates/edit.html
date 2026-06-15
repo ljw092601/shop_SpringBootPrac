@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>아이템 수정</title>
+    <style>
+        body { max-width: 720px; margin: 40px auto; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+        h1 { margin-bottom: 1rem; }
+        form { display: grid; gap: 14px; }
+        label { font-weight: 600; }
+        input, button { padding: 10px; font-size: 16px; }
+        .row { display: grid; gap: 6px; }
+        .actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            background: #f8f8f8;
+            color: #333;
+            text-decoration: none;   /* 밑줄 제거 */
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn:hover {
+            background: #e9e9e9;
+        }
+        .btn.primary {
+            background: #2c7be5;
+            color: #fff;
+            border-color: #2c7be5;
+        }
+    </style>
+</head>
+<body>
+<h1>아이템 수정</h1>
+
+<!-- model.addAttribute("item", item) 로 넘어온 엔티티를 그대로 사용 -->
+<form th:action="@{|/edit/${item.id}|}" th:object="${item}" method="post">
+    <!-- PUT 요청 지원 -->
+    <input type="hidden" name="_method" value="put" />
+
+    <!-- ID는 hidden -->
+    <input type="hidden" th:field="*{id}" />
+
+    <div class="row">
+        <label for="name">이름</label>
+        <input id="name" type="text" th:field="*{name}" required />
+    </div>
+
+    <div class="row">
+        <label for="price">가격</label>
+        <input id="price" type="number" th:field="*{price}" min="0" />
+    </div>
+
+    <div class="row">
+        <label for="category">카테고리</label>
+        <input id="category" type="text" th:field="*{category}" />
+    </div>
+
+    <div class="row">
+        <label for="fileInput">이미지</label>
+        <input type="file" id="fileInput" onchange="getURL(this)" />
+        <input type="hidden" id="img_url" th:field="*{image}" />
+    </div>
+
+    <div class="actions">
+        <button class="btn primary" type="submit">수정 저장</button>
+        <a class="btn" th:href="@{/list}">목록</a>
+    </div>
+</form>
+<script>
+    async function getURL(input) {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        // presigned-url 요청 (파일명은 반드시 인코딩!)
+        const res = await fetch('/presigned-url?filename=' + encodeURIComponent(file.name));
+        if (!res.ok) {
+            alert('presigned URL 요청 실패');
+            return;
+        }
+        const presignedUrl = (await res.text()).trim();
+
+        const putRes = await fetch(presignedUrl, {
+            method : 'PUT',
+            headers: { 'Content-Type': file.type || 'application/octet-stream' },
+            body   : file
+        });
+        if (!putRes.ok) {
+            alert('파일 업로드 실패');
+            return;
+        }
+
+        const publicUrl = presignedUrl.split('?')[0];
+
+        // hidden input에 저장 (서버로 전송될 값)
+        document.getElementById('img_url').value = publicUrl;
+    }
+</script>
+</body>
+</html>
